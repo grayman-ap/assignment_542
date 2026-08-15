@@ -1,0 +1,131 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="700" viewBox="0 0 980 700" font-family="Segoe UI, Arial, sans-serif" font-size="13">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#333"/>
+    </marker>
+  </defs>
+
+  <rect x="10" y="10" width="960" height="300" fill="#f4f9ff" stroke="#88a6c8" stroke-width="2" stroke-dasharray="8 4" rx="10"/>
+  <text x="30" y="34" font-size="14" font-weight="bold" fill="#2a4a73">Trust boundary B1 - Client (student / admin browser)</text>
+
+  <rect x="10" y="320" width="960" height="370" fill="#f5fbf5" stroke="#5c8a5c" stroke-width="2" stroke-dasharray="8 4" rx="10"/>
+  <text x="30" y="344" font-size="14" font-weight="bold" fill="#2f5c2f">Trust boundary B2 - Web application server (PHP/Apache)</text>
+
+  <rect x="700" y="330" width="250" height="150" fill="#f6f6f6" stroke="#777" stroke-width="2" stroke-dasharray="8 4" rx="10"/>
+  <text x="715" y="350" font-size="13" font-weight="bold" fill="#444">Trust boundary B3</text>
+  <text x="715" y="368" font-size="12" fill="#444">Internal database &amp; storage</text>
+
+  <!-- External service (outside all trust) -->
+  <rect x="740" y="560" width="210" height="90" fill="#fff4e6" stroke="#b57e2e" stroke-width="2" rx="10"/>
+  <text x="755" y="592" font-weight="bold">Course Catalogue</text>
+  <text x="755" y="610" font-size="12">External service</text>
+  <text x="755" y="628" font-size="11" fill="#666">(catalog.ftminna.internal)</text>
+  <text x="890" y="580" font-size="11" fill="#666">B4 - external</text>
+
+  <!-- Actors -->
+  <g>
+    <rect x="60" y="70" width="150" height="52" fill="#fff" stroke="#2a4a73" stroke-width="2" rx="8"/>
+    <text x="75" y="100" font-weight="bold">Student</text>
+  </g>
+  <g>
+    <rect x="60" y="190" width="150" height="52" fill="#fff" stroke="#2a4a73" stroke-width="2" rx="8"/>
+    <text x="75" y="220" font-weight="bold">Administrator</text>
+  </g>
+
+  <!-- Client processes -->
+  <g>
+    <rect x="330" y="70" width="180" height="52" fill="#dcebff" stroke="#2a4a73" stroke-width="2" rx="8"/>
+    <text x="345" y="92" font-weight="bold">Login / Session</text>
+    <text x="345" y="110" font-size="11" fill="#444">P1 (client submit)</text>
+  </g>
+  <g>
+    <rect x="330" y="180" width="180" height="52" fill="#dcebff" stroke="#2a4a73" stroke-width="2" rx="8"/>
+    <text x="345" y="202" font-weight="bold">Profile / Course Reg.</text>
+    <text x="345" y="220" font-size="11" fill="#444">P2 (client submit)</text>
+  </g>
+  <g>
+    <rect x="560" y="70" width="180" height="52" fill="#dcebff" stroke="#2a4a73" stroke-width="2" rx="8"/>
+    <text x="575" y="92" font-weight="bold">Document Upload</text>
+    <text x="575" y="110" font-size="11" fill="#444">P3 (client)</text>
+  </g>
+  <g>
+    <rect x="560" y="180" width="180" height="52" fill="#dcebff" stroke="#2a4a73" stroke-width="2" rx="8"/>
+    <text x="575" y="202" font-weight="bold">URL Preview / Import</text>
+    <text x="575" y="220" font-size="11" fill="#444">P4 (client)</text>
+  </g>
+
+  <!-- Server processes -->
+  <g>
+    <rect x="60" y="420" width="190" height="52" fill="#d9ecd9" stroke="#2f5c2f" stroke-width="2" rx="8"/>
+    <text x="75" y="442" font-weight="bold">Authenticate (P5)</text>
+    <text x="75" y="460" font-size="11" fill="#444">validate · verify · session</text>
+  </g>
+  <g>
+    <rect x="290" y="420" width="190" height="52" fill="#d9ecd9" stroke="#2f5c2f" stroke-width="2" rx="8"/>
+    <text x="305" y="442" font-weight="bold">Profile &amp; Registration (P6)</text>
+    <text x="305" y="460" font-size="11" fill="#444">CRUD · authorise · CSRF</text>
+  </g>
+  <g>
+    <rect x="290" y="560" width="190" height="52" fill="#d9ecd9" stroke="#2f5c2f" stroke-width="2" rx="8"/>
+    <text x="305" y="582" font-weight="bold">Upload handler (P7)</text>
+    <text x="305" y="600" font-size="11" fill="#444">validate · persist · serve</text>
+  </g>
+  <g>
+    <rect x="530" y="420" width="190" height="52" fill="#d9ecd9" stroke="#2f5c2f" stroke-width="2" rx="8"/>
+    <text x="545" y="442" font-weight="bold">URL preview guard (P8)</text>
+    <text x="545" y="460" font-size="11" fill="#444">allowlist · SSRF checks</text>
+  </g>
+  <g>
+    <rect x="60" y="560" width="190" height="52" fill="#d9ecd9" stroke="#2f5c2f" stroke-width="2" rx="8"/>
+    <text x="75" y="582" font-weight="bold">Admin management (P9)</text>
+    <text x="75" y="600" font-size="11" fill="#444">courses · users · enrolments</text>
+  </g>
+
+  <!-- Data stores (B3) -->
+  <g>
+    <ellipse cx="770" cy="380" rx="70" ry="28" fill="#fff" stroke="#555" stroke-width="2"/>
+    <rect x="700" y="380" width="140" height="34" fill="#fff" stroke="#555" stroke-width="2"/>
+    <text x="745" y="402" font-size="12" font-weight="bold">MySQL D1</text>
+  </g>
+  <g>
+    <rect x="710" y="440" width="120" height="40" fill="#fff" stroke="#555" stroke-width="2" rx="6"/>
+    <text x="735" y="455" font-size="12" font-weight="bold">Docs D2</text>
+    <text x="720" y="470" font-size="10" fill="#666">storage/</text>
+  </g>
+  <g>
+    <rect x="860" y="440" width="120" height="40" fill="#fff" stroke="#555" stroke-width="2" rx="6"/>
+    <text x="885" y="455" font-size="12" font-weight="bold">Logs D3</text>
+    <text x="870" y="470" font-size="10" fill="#666">app.log</text>
+  </g>
+
+  <!-- Data flows: client -> server -->
+  <path d="M 200 96 L 330 96" fill="none" stroke="#333" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="215" y="84" font-size="11">credentials F1</text>
+  <path d="M 200 96 L 210 120 L 210 180 L 225 206" fill="none" stroke="#333" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="216" y="145" font-size="11">session cookie F2</text>
+  <path d="M 200 206 L 330 206" fill="none" stroke="#333" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="215" y="194" font-size="11">profile / course F3</text>
+  <path d="M 730 122 L 730 250 L 730 330 L 730 418" fill="none" stroke="#333" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="738" y="320" font-size="11">file upload F4</text>
+  <path d="M 720 206 L 720 250 L 645 330 L 645 418" fill="none" stroke="#333" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="660" y="330" font-size="11">preview URL F5</text>
+  <path d="M 200 242 L 200 300 L 250 300 L 250 418" fill="none" stroke="#333" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="238" y="365" font-size="11">admin actions F6</text>
+
+  <!-- Server <-> DB / storage -->
+  <path d="M 250 446 L 698 392" fill="none" stroke="#333" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <path d="M 698 398 L 250 452" fill="none" stroke="#333" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="430" y="392" font-size="11">queries / results F7</text>
+  <path d="M 385 612 L 700 470" fill="none" stroke="#333" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="480" y="560" font-size="11">store / serve F8</text>
+  <path d="M 90 612 L 90 660 L 920 660 L 920 484" fill="none" stroke="#333" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="700" y="650" font-size="11">audit events F9</text>
+
+  <!-- Preview fetch (P8 -> catalogue) -->
+  <path d="M 625 472 L 625 540 L 740 600" fill="none" stroke="#333" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="625" y="535" font-size="11">fetch allowlisted F10</text>
+  <path d="M 742 590 L 625 480" fill="none" stroke="#333" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="650" y="575" font-size="11">catalogue F11</text>
+
+  <text x="30" y="680" font-size="12" fill="#555">F1-F6 traverse B1->B2; F7-F9 are within B2/B3; F10-F11 cross B2->B4 (external) under an allowlist.</text>
+</svg>

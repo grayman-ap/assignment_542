@@ -1,0 +1,17 @@
+IFT 542 clone manifest
+=====================
+Matric number : 2021/1/84154CF
+Folder name   : 2021-1-84154CF_IFT542
+Student       : Peter Adeshina <peteradeshina3@gmail.com>
+Department    : Information Technology
+GitHub        : https://github.com/grayman-ap/assignment_542.git
+Date          : 2026-08-13
+Placeholders  : 6 files updated
+
+Submission checklist
+--------------------
+1. All files use MATRICNO_IFT542 naming (PDF should be 2021-1-84154CF_IFT542.pdf).
+2. Project runs from README with fictitious data only.
+3. Secrets are placeholders only (see .env.example).
+4. Evidence is readable, redacted and referenced from the report.
+5. Tech report (docs/report.html -> Save as PDF) covers Tasks 1-3.

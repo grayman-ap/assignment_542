@@ -1,0 +1,83 @@
+/* ============================================================
+   FUTMinna Student Registration — STARTER (vulnerable) build UI
+   Baseline theme. Distinct from the hardened build on purpose:
+   simpler palette, no defensive messaging.
+   ============================================================ */
+:root {
+  --bg:      #f5f6f8;
+  --surface: #ffffff;
+  --border:  #dfe3e8;
+  --text:    #22272e;
+  --muted:   #68727e;
+  --accent:  #2b6cb0;
+  --accent-d:#1d4f8f;
+  --amber:   #b45309;
+  --amber-soft:#fef3c7;
+  --red:     #b91c1c;
+  --red-soft:#fee2e2;
+  --green:   #047857;
+  --green-soft:#d1fae5;
+  --radius:  12px;
+  --shadow:  0 1px 2px rgba(20,30,45,.06), 0 2px 6px rgba(20,30,45,.05);
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif; color: var(--text); background: var(--bg); line-height: 1.55; display: flex; flex-direction: column; min-height: 100vh; }
+main.wrap { flex: 1 1 auto; width: 100%; max-width: 960px; margin: 0 auto; padding: 26px 18px 54px; }
+.wrap { max-width: 960px; margin: 0 auto; padding: 0 18px; }
+
+/* Top bar */
+.topbar { background: #1f2937; color: #fff; }
+.topbar-inner { display: flex; align-items: center; justify-content: space-between; gap: 14px; min-height: 58px; flex-wrap: wrap; padding: 8px 18px; }
+.brand { display: flex; align-items: center; gap: 10px; color: #fff; text-decoration: none; font-weight: 700; }
+.brand:hover { text-decoration: none; }
+.brand .mark { width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center; background: #374151; color: #fbbf24; }
+.brand .name { display: flex; flex-direction: column; line-height: 1.2; }
+.brand .name b { font-size: .98rem; }
+.brand .name span { font-size: .7rem; color: #9ca3af; text-transform: uppercase; letter-spacing: .5px; }
+.starter-pill { display: inline-flex; align-items: center; gap: 6px; background: #fbbf24; color: #78350f; font-weight: 800; font-size: .72rem; letter-spacing: .5px; text-transform: uppercase; padding: 4px 12px; border-radius: 999px; }
+.starter-pill .dot { width: 7px; height: 7px; border-radius: 50%; background: #92400e; }
+
+/* Nav */
+.navrow { background: #fff; border-bottom: 1px solid var(--border); }
+.navrow-inner { display: flex; gap: 2px; overflow-x: auto; padding: 7px 18px; }
+.navrow a { color: var(--muted); font-size: .87rem; font-weight: 600; padding: 6px 12px; border-radius: 8px; text-decoration: none; white-space: nowrap; }
+.navrow a:hover { background: #eef2f7; color: var(--text); }
+.navrow a.active { background: var(--accent); color: #fff; }
+
+/* Cards / tables / forms */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 22px 24px; margin-bottom: 20px; }
+.card h2 { margin: 0 0 12px; font-size: 1.02rem; color: #1f2937; }
+h1 { font-size: 1.35rem; margin: 0 0 4px; }
+.page-head p { margin: 0 0 18px; color: var(--muted); font-size: .88rem; }
+label { display: block; margin: 13px 0 5px; font-weight: 600; font-size: .85rem; color: #374151; }
+input[type=text], input[type=email], input[type=password], input[type=url], input[type=number] {
+  width: 100%; padding: 9px 12px; border: 1px solid #cbd2d9; border-radius: 8px; font-size: .93rem; font-family: inherit;
+}
+input:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px rgba(43,108,176,.15); }
+button { background: var(--accent); color: #fff; border: 0; border-radius: 8px; padding: 9px 16px; font-size: .9rem; font-weight: 600; cursor: pointer; font-family: inherit; margin-top: 14px; }
+button:hover { background: var(--accent-d); }
+button.ghost { background: #eef2f7; color: #374151; margin-left: 6px; }
+table { width: 100%; border-collapse: collapse; font-size: .89rem; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--border); }
+th { background: #f8fafc; font-size: .75rem; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); }
+tr:hover td { background: #fbfcfe; }
+.msg-ok { background: var(--green-soft); color: var(--green); border: 1px solid #a7f3d0; border-radius: 8px; padding: 10px 13px; font-size: .88rem; margin-bottom: 14px; }
+.msg-err { background: var(--red-soft); color: var(--red); border: 1px solid #fecaca; border-radius: 8px; padding: 10px 13px; font-size: .88rem; margin-bottom: 14px; }
+.muted { color: var(--muted); font-size: .85rem; }
+code { background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 5px; padding: 1px 6px; font-size: .82em; }
+.mono { font-family: Consolas, Menlo, monospace; font-size: .84em; }
+
+/* Login */
+.login-shell { max-width: 860px; margin: 4vh auto 0; border-radius: 16px; overflow: hidden; box-shadow: var(--shadow); border: 1px solid var(--border); background: #fff; display: grid; grid-template-columns: 1fr 1fr; }
+.login-aside { background: #1f2937; color: #fff; padding: 40px 34px; }
+.login-aside h2 { color: #fff; font-size: 1.3rem; margin: 0 0 10px; }
+.login-aside p { color: #9ca3af; font-size: .9rem; margin: 0 0 18px; }
+.login-aside ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.login-aside li { font-size: .85rem; color: #cbd5e1; display: flex; gap: 9px; }
+.login-aside li::before { content: "•"; color: #fbbf24; font-weight: 800; }
+.login-form { padding: 40px 34px; }
+.login-form .btn { width: 100%; margin-top: 18px; padding: 10px; }
+.site-footer { border-top: 1px solid var(--border); background: #fff; color: var(--muted); font-size: .78rem; padding: 16px 18px 26px; }
+.site-footer .wrap { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+
+@media (max-width: 760px) { .login-shell { grid-template-columns: 1fr; } .login-aside ul { display: none; } }

@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Security Assessment and Hardening — Student Registration Web Application — IFT 542</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body { font-family: Georgia, 'Times New Roman', serif; font-size: 12pt; color: #1a1a1a; line-height: 1.5; margin: 0 auto; max-width: 860px; padding: 32px; }
+  h1 { font-size: 20pt; text-align: center; margin: 6px 0; }
+  h2 { font-size: 15pt; border-bottom: 2px solid #333; padding-bottom: 4px; margin-top: 28px; page-break-after: avoid; }
+  h3 { font-size: 12.5pt; margin-top: 20px; page-break-after: avoid; }
+  p  { margin: 8px 0; text-align: justify; }
+  table { border-collapse: collapse; width: 100%; font-size: 9.5pt; margin: 10px 0; }
+  th, td { border: 1px solid #555; padding: 5px 7px; vertical-align: top; }
+  th { background: #eee; }
+  pre { background: #f5f5f5; border: 1px solid #ccc; padding: 8px; font-family: Consolas, Menlo, monospace; font-size: 9pt; overflow-x: auto; }
+  code { font-family: Consolas, Menlo, monospace; font-size: 9.5pt; }
+  .title { text-align: center; margin-top: 90px; }
+  .title .institution { font-size: 16pt; font-weight: bold; }
+  .title .course { font-size: 13pt; margin-top: 8px; }
+  .title .meta { margin-top: 40px; font-size: 12pt; line-height: 2; }
+  .toc { margin: 20px 0; }
+  .toc ul { list-style: none; padding-left: 0; }
+  .toc li { margin: 3px 0; }
+  .badge { display: inline-block; background: #2f5c2f; color: #fff; border-radius: 3px; padding: 1px 7px; font-size: 8.5pt; }
+  .badge.risk { background: #a33; }
+  .small { font-size: 9pt; color: #555; }
+  .page-break { page-break-before: always; }
+  .fixed { font-family: Consolas, Menlo, monospace; font-size: 9pt; background:#f5f5f5; padding: 1px 4px; }
+</style>
+</head>
+<body>
+
+<div class="title">
+  <div class="institution">FEDERAL UNIVERSITY OF TECHNOLOGY, MINNA</div>
+  <div class="institution">SCHOOL OF INFORMATION AND COMMUNICATION TECHNOLOGY</div>
+  <div class="course">IFT 542 — Practical Assignment</div>
+  <h1>Security Assessment and Hardening of a Student Registration Web Application</h1>
+  <div class="meta">
+    <div><strong>Student:</strong> Peter Adeshina</div>
+    <div><strong>Matriculation No:</strong> 2021/1/84154CF</div>
+    <div><strong>Department:</strong> Information Technology</div>
+    <div><strong>Email:</strong> peteradeshina3@gmail.com</div>
+    <div><strong>Date:</strong> 2026-08-13</div>
+    <div><strong>Git repository:</strong> https://github.com/grayman-ap/assignment_542.git</div>
+  </div>
+</div>
+
+<div class="toc page-break">
+<h2>Table of Contents</h2>
+<ul>
+  <li>1. Introduction, Scope and Methodology</li>
+  <li>2. Task 1 — STRIDE Threat Model and Risk Assessment</li>
+  <li>3. Task 2 — Secure Authentication and SQL Injection Remediation</li>
+  <li>4. Task 3 — Web Application Defence Hardening</li>
+  <li>5. Automated Verification and Test Evidence</li>
+  <li>6. Mapping to the Required Practical Activities and Submission Checklist</li>
+  <li>7. Conclusion</li>
+  <li>Appendix A — Reproducing the Environment</li>
+  <li>Appendix B — References and Standards</li>
+</ul>
+</div>
+
+<div class="page-break"></div>
+<h2>1. Introduction, Scope and Methodology</h2>
+
+<h3>1.1 Objectives</h3>
+<p>This report documents a full security assessment and hardening exercise on a
+student registration web application. It (a) produces a threat model using
+STRIDE and a risk assessment for the application, (b) hardens the
+authentication subsystem and removes SQL injection, and (c) applies and tests
+web application defences covering OWASP Top-10 classes including XSS, CSRF,
+SSRF, security misconfiguration, brute force and unsafe file upload. The
+exercise is executed entirely in an authorised local laboratory using Docker
+and fictitious data, and produces scripted, repeatable evidence of every
+control.</p>
+
+<h3>1.2 Environment</h3>
+<table>
+<tr><th>Component</th><th>Value</th></tr>
+<tr><td>Application (hardened)</td><td>PHP 8.3 (Apache), port <span class="fixed">8085</span></td></tr>
+<tr><td>Application (starter / vulnerable)</td><td>Same stack, port <span class="fixed">8086</span> — "before" baseline</td></tr>
+<tr><td>Database</td><td>MySQL 8.4, two schemas: <span class="fixed">student_reg</span> (hardened) and <span class="fixed">student_reg_vuln</span> (starter)</td></tr>
+<tr><td>Orchestration</td><td>Docker Compose (services: db, app, vulnerable, preview, cli)</td></tr>
+<tr><td>Preview service</td><td>Internal course-catalogue host <span class="fixed">catalog.ftminna.internal</span> (allowlisted SSRF target)</td></tr>
+<tr><td>Test tooling</td><td>Bash + curl test suites driven by <span class="fixed">make tests</span></td></tr>
+</table>
+<p class="small">Passwords are not echoed and no secrets are printed by any test. The admin
+password is generated randomly at seed time and stored only in
+<span class="fixed">db/seed-output/ADMIN_PASSWORD.txt</span> (gitignored).</p>
+
+<h3>1.3 Methodology</h3>
+<p>The assessment follows a threat-modelling-first approach: (1) map the system
+with a data-flow diagram and trust boundaries; (2) apply STRIDE to each data
+flow and store; (3) score likelihood and impact to produce a risk register;
+(4) remediate the highest-risk findings in the hardened build; and (5) verify
+each control with an automated test that produces evidence files. Controls and
+scoring are referenced to OWASP ASVS and CWE identifiers (Appendix B).</p>
+
+<div class="page-break"></div>
+<h2>2. Task 1 — STRIDE Threat Model and Risk Assessment</h2>
+
+<h3>2.1 Data-Flow Diagram with Trust Boundaries</h3>
+<img src="dfd.svg" alt="DFD with trust boundaries" style="width:100%; border:1px solid #999;">
+<p class="small">Trust boundaries: <strong>B1</strong> client browser (student/admin), <strong>B2</strong> web
+application server, <strong>B3</strong> internal database/storage, <strong>B4</strong> the external
+catalogue service reachable only through the SSRF guard. Flows F1-F6 cross the
+client boundary; F7-F9 are server-internal; F10-F11 cross to B4 under the
+destination allowlist.</p>
+
+<h3>2.2 STRIDE Worksheet</h3>
+<p>The complete worksheet is in <span class="fixed">docs/STRIDE.md</span>. A
+summary of the eight identified threats follows. Likelihood (L) and Impact (I)
+are scored 1-5; <strong>Risk = L × I</strong>.</p>
+
+<table>
+<tr><th>#</th><th>STRIDE</th><th>Threat</th><th>L</th><th>I</th><th>Risk</th></tr>
+<tr><td>T1</td><td>Spoofing</td><td>Login bypass via SQL injection and session fixation/theft</td><td>4</td><td>5</td><td><span class="badge risk">20</span></td></tr>
+<tr><td>T2</td><td>Tampering</td><td>SQL injection through concatenated profile/course queries</td><td>4</td><td>5</td><td><span class="badge risk">20</span></td></tr>
+<tr><td>T3</td><td>Information Disclosure</td><td>Verbose errors, plaintext passwords, stored XSS, default admin</td><td>4</td><td>4</td><td>16</td></tr>
+<tr><td>T4</td><td>Elevation of Privilege</td><td>Missing role checks, unsafe upload, CSRF admin actions</td><td>3</td><td>5</td><td>15</td></tr>
+<tr><td>T5</td><td>Repudiation</td><td>No audit trail for registrations / admin actions</td><td>4</td><td>3</td><td>12</td></tr>
+<tr><td>T6</td><td>Denial of Service</td><td>Brute force, upload disk exhaustion, SSRF amplification</td><td>4</td><td>3</td><td>12</td></tr>
+<tr><td>T7</td><td>Spoofing/Tampering</td><td>CSRF on state-changing forms</td><td>3</td><td>4</td><td>12</td></tr>
+<tr><td>T8</td><td>Information Disclosure</td><td>SSRF via URL preview to internal/metadata endpoints</td><td>3</td><td>4</td><td>12</td></tr>
+</table>
+
+<h3>2.3 Top Three Risks and Justification</h3>
+<ol>
+  <li><strong>T1/T2 — SQL injection and identity spoofing (20).</strong> The
+  login and write paths are the entry point to the whole application. A single
+  injected query authenticates the attacker as the first user (the admin in
+  the starter build) or mutates the entire schema. Exploitability is trivial
+  (L4), impact total (I5).</li>
+  <li><strong>T3 — Information disclosure (16).</strong> Plaintext credential
+  storage, verbose errors and stored XSS expose identities and personal data
+  at scale, even after SQLi is fixed.</li>
+  <li><strong>T4 — Elevation of privilege (15).</strong> Authorisation gaps,
+  unsafe uploads and CSRF give a student a path to admin state changes or code
+  execution; the fixes are cheap, so they are prioritised.</li>
+</ol>
+
+<h3>2.4 Risk Register and Residual Risk</h3>
+<p>The full register is in <span class="fixed">docs/risk-register.md</span>.
+All eight critical/high risks are mitigated in the hardened build and closed
+by automated evidence (Section 5). Two low/medium risks are explicitly
+accepted for the authorised local lab: (a) session-cookie sniffing on
+plain-HTTP localhost, and (b) non-WORM local audit logs. Both carry an
+acceptance condition — TLS and centralised log shipping — that must be met
+before any production use.</p>
+
+<div class="page-break"></div>
+<h2>3. Task 2 — Secure Authentication and SQL Injection Remediation</h2>
+
+<h3>3.1 SQL Injection — Before</h3>
+<p>The starter build concatenates raw user input directly into SQL on every
+query. The login does so with <span class="fixed">email</span> and
+<span class="fixed">password</span>, trusts the first row of the result set,
+and compares the password against a plaintext column:</p>
+<pre>// vulnerable/public/login.php (starter)
+$sql = "SELECT * FROM users WHERE email = '$email' AND password_hash = '$pass'";
+$result = mysqli_query($conn, $sql);
+if ($result && ($row = mysqli_fetch_assoc($result))) {   // trusts FIRST row
+    $_SESSION['user_id'] = $row['id'];
+    $_SESSION['role'] = $row['role'];                     // no session rotation
+    header('Location: index.php');
+}
+...
+$error = 'Login failed. ' . mysqli_error($conn);          // leaks DB internals</pre>
+<p>The payload <span class="fixed">' OR '1'='1' -- </span> in the email field
+turns the predicate into <span class="fixed">WHERE email = '' OR '1'='1' -- …
+AND password_hash = …</span>, so the query returns the first row of
+<span class="fixed">users</span> — the admin. The same pattern appears in the
+starter's upload (<span class="fixed">INSERT INTO documents …</span>) and
+elsewhere.</p>
+
+<h3>3.2 SQL Injection — After (parameterisation)</h3>
+<p>Every query in the hardened build uses PDO prepared statements with native
+(pre-parse) parameter binding. Because MySQL sees the SQL template and the
+parameter values separately, user input can never change the structure of the
+query:</p>
+<pre>// app/src/db.php (hardened)
+public static function pdo(): PDO {
+    $dsn = 'mysql:host=' . DB_HOST . ';port=' . DB_PORT
+         . ';dbname=' . DB_NAME . ';charset=utf8mb4';
+    self::$pdo = new PDO($dsn, DB_USER, DB_PASSWORD, [
+        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES   => false,   // native server-side prepares
+    ]);
+}
+
+// app/src/auth.php (login, hardened)
+$stmt = Database::run('SELECT * FROM users WHERE email = ? LIMIT 1', [$email]);
+$user = $stmt->fetch();</pre>
+<p>Parameterisation is applied consistently across profile updates, course
+registration, enrolment queries, document records, the admin console and the
+audit/rate-limit tables. This removes the entire CWE-89 class rather than
+patching one query.</p>
+
+<h3>3.3 Input Validation</h3>
+<p>Input is validated by type, length and format before any database contact
+(<span class="fixed">app/src/input.php</span>): emails are validated with
+<span class="fixed">filter_var(…, FILTER_VALIDATE_EMAIL)</span> and length-capped;
+passwords enforce a minimum strength policy (≥10 characters, letters + digits);
+course/registration parameters are cast and range-checked; upload metadata is
+checked against an allowlist. Invalid input raises a
+<span class="fixed">ValidationError</span> (HTTP 422) and is logged. This is a
+second, independent line of defence on top of parameterisation.</p>
+
+<h3>3.4 Password Storage — Before and After</h3>
+<table>
+<tr><th>Aspect</th><th>Starter (<span class="fixed">student_reg_vuln</span>)</th><th>Hardened (<span class="fixed">student_reg</span>)</th></tr>
+<tr><td>Column</td><td><span class="fixed">password_hash</span> holding plaintext</td><td><span class="fixed">password_hash</span> holding Argon2id hash</td></tr>
+<tr><td>Algorithm</td><td>None (plaintext, e.g. <span class="fixed">admin</span>)</td><td><span class="fixed">password_hash($p, PASSWORD_ARGON2ID)</span></td></tr>
+<tr><td>Comparison</td><td>String equality in SQL</td><td><span class="fixed">password_verify()</span> with constant flow</td></tr>
+<tr><td>Default admin</td><td>Hard-coded <span class="fixed">admin/admin</span></td><td>Random 32-char password generated at seed</td></tr>
+<tr><td>Evidence</td><td><span class="fixed">docs/SQLI.md</span> notes + tests</td><td><span class="fixed">evidence/generated/password-storage-evidence.txt</span> (Argon2id, redacted)</td></tr>
+</table>
+<p>The Argon2id hashes use a per-application random salt generated by PHP.
+Verification always runs the Argon2id check even for unknown accounts to keep
+the response time constant and prevent user enumeration via timing.</p>
+
+<h3>3.5 Session, Brute-Force and Lockout Controls</h3>
+<ul>
+  <li><strong>Session hardening.</strong> Cookie is HttpOnly, SameSite=Lax,
+  session name changed from the default; on successful login
+  <span class="fixed">session_regenerate_id(true)</span> defeats session
+  fixation; sessions are destroyed on logout.</li>
+  <li><strong>Rate limiting.</strong> A sliding 15-minute window of failed
+  logins per source IP (<span class="fixed">app/src/ratelimit.php</span>);
+  past the threshold the endpoint returns HTTP 429 before any work.</li>
+  <li><strong>Account lockout.</strong> After
+  <span class="fixed">AUTH_MAX_ATTEMPTS</span> consecutive failures the account
+  is locked for <span class="fixed">AUTH_LOCKOUT_MINUTES</span>; a locked
+  account is rejected even with the correct password. Lock expiry is computed in
+  PHP so the app and DB timezones cannot disagree.</li>
+  <li><strong>No enumeration.</strong> All failures return the identical
+  message "Invalid email or password."; failed-vs-unknown-account detail goes
+  only to the redacted audit log.</li>
+  <li><strong>Least privilege.</strong> The application DB user holds DML
+  rights only on the two schemas (no <span class="fixed">GRANT</span>, no
+  cross-schema access); the <span class="fixed">init.sh</span> grants are scoped
+  per schema.</li>
+</ul>
+
+<div class="page-break"></div>
+<h2>4. Task 3 — Web Application Defence Hardening</h2>
+
+<h3>4.1 XSS — Output Encoding and CSP</h3>
+<p>Every view renders dynamic values through a single output-encoding function;
+combined with a strict Content-Security-Policy this neutralises reflected and
+stored XSS (CWE-79).</p>
+<pre>// app/src/output.php
+function e(mixed $value): string {
+    return htmlspecialchars((string) $value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+}
+
+// app/src/bootstrap.php (headers)
+header('Content-Security-Policy: default-src \'self\'; script-src \'self\';
+       style-src \'self\'; img-src \'self\' data:; object-src \'none\';
+       base-uri \'self\'; form-action \'self\'; frame-ancestors \'none\'');
+header('X-Content-Type-Options: nosniff');
+header('X-Frame-Options: DENY');
+header('Referrer-Policy: strict-origin-when-cross-origin');
+header('Permissions-Policy: camera=(), microphone=(), geolocation=()');
+header('Cache-Control: no-store, no-cache, must-revalidate');</pre>
+<p>The starter profile page echoed <span class="fixed">$_GET['name']</span> /
+<span class="fixed">$_POST</span> values raw; the hardened profile stores
+validated values and renders them through <span class="fixed">e()</span>. A
+script payload stored in the starter app is returned inert by the hardened
+app (verified by <span class="fixed">tests/test_webdefences.sh</span>).</p>
+
+<h3>4.2 CSRF — Tokens and SameSite</h3>
+<p>All state-changing forms (profile update, registration, upload, admin
+unlock/reset/create/delete, logout) embed a per-session 256-bit token verified
+with a constant-time comparison; the session cookie is SameSite=Lax; the
+verification also checks the Origin header when the browser sends one.</p>
+<pre>// app/src/csrf.php (excerpt)
+public static function token(): string {
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+    return $_SESSION['csrf_token'];
+}
+// verified server-side with hash_equals(); regenerated after login.
+// input.php: CsrfToken uses hash_equals($_SESSION['csrf_token'], $sent)</pre>
+
+<h3>4.3 SSRF — Destination Allowlist on the URL Preview</h3>
+<p>The preview/import feature is the only server-side fetch in the app. In the
+starter build it calls <span class="fixed">file_get_contents($url)</span> on
+any URL. The hardened build (<span class="fixed">app/src/ssrf.php</span>)
+enforces, in order: scheme allowlist (http/https only); destination allowlist
+(only <span class="fixed">catalog.ftminna.internal</span>); rejection of raw IP
+addresses; resolution re-validation that refuses loopback
+(<span class="fixed">127.0.0.0/8</span>), link-local and cloud-metadata ranges
+(<span class="fixed">169.254.0.0/16</span>, <span class="fixed">::1</span>,
+<span class="fixed">fe80::/10</span>, <span class="fixed">fc00::/7</span>);
+connection to the validated IP rather than the DNS name (limits DNS rebinding);
+a 5-second timeout and a redirect cap of 2. Returned content is rendered as
+plain text, never as inline HTML.</p>
+
+<h3>4.4 Security Misconfiguration and Secret Handling</h3>
+<ul>
+  <li><strong>Errors:</strong> <span class="fixed">display_errors=0</span>,
+  <span class="fixed">APP_ENV=production</span> in the shipped
+  <span class="fixed">.env</span>; the global exception handler returns a
+  generic 500 page and logs the detail server-side.</li>
+  <li><strong>Server tokens:</strong> <span class="fixed">ServerTokens Prod</span>
+  and <span class="fixed">ServerSignature Off</span> in the Apache vhost.</li>
+  <li><strong>Uploads:</strong> MIME and extension allowlist (pdf/png/jpg/docx),
+  size cap, random server-side file names, storage outside the web root
+  (<span class="fixed">storage/</span> not served by Apache), downloads forced
+  with a fixed <span class="fixed">Content-Type</span> and
+  <span class="fixed">Content-Disposition: attachment</span>.</li>
+  <li><strong>Secrets:</strong> configuration injected via environment
+  variables (<span class="fixed">.env</span>, gitignored); credentials never
+  logged; the admin password is generated randomly at seed time.</li>
+  <li><strong>Least privilege:</strong> restricted DB grants; no default or
+  documented shared credentials in the hardened build.</li>
+</ul>
+
+<h3>4.5 Audit Logging</h3>
+<p>A structured JSON logger (<span class="fixed">app/src/logger.php</span>)
+records who/what/when for authentication events, authorisation denials, CSRF
+rejections, blocked SSRF attempts, validation failures, admin actions and
+application errors, with a redaction pass so no passwords or tokens ever reach
+the log. Logs are written to <span class="fixed">logs/app.log</span> and the
+incident response runbook (<span class="fixed">docs/runbook.md</span>)
+describes how they are used for identification and containment.</p>
+
+<h3>4.6 Incident Response</h3>
+<p>A one-page runbook (<span class="fixed">docs/runbook.md</span>) covers the
+six phases: preparation, identification, containment, eradication, recovery and
+lessons learned, with concrete commands (<span class="fixed">docker compose
+logs</span>, <span class="fixed">make reset</span>, evidence quarantine) and an
+escalation path to the course instructor. The laboratory is authorised,
+local-only and uses fictitious data; an ethics statement
+(<span class="fixed">docs/ethics.md</span>) is signed by the author.</p>
+
+<div class="page-break"></div>
+<h2>5. Automated Verification and Test Evidence</h2>
+<p>All controls are exercised by scripted test suites in
+<span class="fixed">tests/</span>, orchestrated by
+<span class="fixed">make tests</span>. Each run writes timestamped evidence
+under <span class="fixed">evidence/generated/run-&lt;TIMESTAMP&gt;/</span> plus
+stable samples (<span class="fixed">password-storage-evidence.txt</span>,
+<span class="fixed">logs-sample.log</span>). The suites are self-cleaning: the
+rate-limit/lockout state is reset before each run so results are reproducible.</p>
+
+<table>
+<tr><th>Suite</th><th>What it proves</th><th>Checks</th><th>Status</th></tr>
+<tr><td>test_auth.sh</td><td>Correct login; wrong password rejected; SQLi login bypass fails on hardened build; admin-only pages reject students (403); account lockout after N failures</td><td>8</td><td>PASS</td></tr>
+<tr><td>test_sqli.sh</td><td><span class="fixed">' OR '1'='1'</span> variants and UNION probes on login, profile, registration return failures — parameterisation verified</td><td>4</td><td>PASS</td></tr>
+<tr><td>test_password_hashing.sh</td><td>DB stores Argon2id hashes (never plaintext); <span class="fixed">password_verify</span> works; redacted evidence file generated</td><td>4</td><td>PASS</td></tr>
+<tr><td>test_webdefences.sh</td><td>CSP + security headers present; stored XSS inert; CSRF token required on all forms; SSRF blocked to loopback/metadata/private hosts; upload MIME allowlist enforced</td><td>20</td><td>PASS</td></tr>
+<tr><td>test_logging.sh</td><td>Audit log records login success/failure, authz denials, CSRF rejections, SSRF blocks with redacted content</td><td>—</td><td>PASS</td></tr>
+<tr><td>test_ratelimit.sh</td><td>Source-IP sliding window returns 429; account lockout enforced even with the correct password</td><td>2</td><td>PASS</td></tr>
+</table>
+<p class="small">Full latest run: <span class="fixed">bash tests/run.sh</span> — 38
+assertions across all suites green on the hardened build, while the equivalent
+attacks succeed on the starter build at <span class="fixed">:8086</span>,
+demonstrating the "before/after" delta.</p>
+
+<h2>6. Mapping to Required Practical Activities and Submission Checklist</h2>
+
+<h3>6.1 Required Practical Activities</h3>
+<table>
+<tr><th>Requirement</th><th>Delivered</th></tr>
+<tr><td>Threat modelling using STRIDE with a data-flow diagram and trust boundaries</td><td>Section 2, <span class="fixed">docs/dfd.svg</span>, <span class="fixed">docs/STRIDE.md</span></td></tr>
+<tr><td>Risk assessment: at least six threats with likelihood, impact, risk score, controls and residual risk</td><td>Section 2.2-2.4, <span class="fixed">docs/risk-register.md</span> (8 threats)</td></tr>
+<tr><td>Hardened authentication (SQLi, password hashing, brute-force/lockout, sessions)</td><td>Section 3 + <span class="fixed">app/src/auth.php</span></td></tr>
+<tr><td>Web defence hardening (XSS, CSRF, SSRF, misconfiguration, uploads, logging)</td><td>Section 4 + <span class="fixed">app/</span></td></tr>
+<tr><td>Incident response plan for the application</td><td>Section 4.6, <span class="fixed">docs/runbook.md</span></td></tr>
+<tr><td>Ethics statement for the authorised local test</td><td><span class="fixed">docs/ethics.md</span></td></tr>
+<tr><td>Automated evidence that each control works</td><td>Section 5, <span class="fixed">evidence/generated/</span>, <span class="fixed">make tests</span></td></tr>
+</table>
+
+<h3>6.2 Evidence to Submit</h3>
+<table>
+<tr><th>Item</th><th>Location</th></tr>
+<tr><td>Technical report (PDF, 8-12 pages)</td><td>This report — <span class="fixed">docs/report.html</span> (open in a browser, print-to-PDF as <span class="fixed">2021-1-84154CF_IFT542.pdf</span>)</td></tr>
+<tr><td>Source code (hardened app, starter, DB, infra)</td><td>Git repository (<span class="fixed">https://github.com/grayman-ap/assignment_542.git</span>), <span class="fixed">app/</span>, <span class="fixed">vulnerable/</span>, <span class="fixed">db/</span>, <span class="fixed">docker-compose.yml</span></td></tr>
+<tr><td>Evidence folder</td><td><span class="fixed">evidence/generated/</span> (per-run outputs, hashing evidence, log samples)</td></tr>
+<tr><td>README with setup, test accounts, dependencies</td><td><span class="fixed">README.md</span> (cloned/personalised per student)</td></tr>
+</table>
+
+<h3>6.3 Submission Checklist</h3>
+<ul>
+  <li>&#9633; PDF report 8-12 pages covering Tasks 1-3, STRIDE worksheet, risk register, DFD, controls, tests</li>
+  <li>&#9633; Source repository pushed to <span class="fixed">https://github.com/grayman-ap/assignment_542.git</span> on branch <span class="fixed">main</span></li>
+  <li>&#9633; <span class="fixed">evidence/generated/</span> present with last full test run</li>
+  <li>&#9633; <span class="fixed">README.md</span> personalised (<span class="fixed">2021/1/84154CF</span>, name, link)</li>
+  <li>&#9633; Ethics statement signed (<span class="fixed">docs/ethics.md</span>)</li>
+  <li>&#9633; Fictitious data only; no secrets in the repository</li>
+</ul>
+
+<h2>7. Conclusion</h2>
+<p>The assessment found the starter application exposed to eight
+critical/high-risk threats dominated by SQL injection, identity spoofing,
+information disclosure and privilege escalation. The hardened build
+parameterises every query, stores Argon2id hashes, rotates sessions, applies
+rate limiting and lockout, encodes output under a strict CSP, verifies CSRF
+tokens, and gates the preview fetch behind an SSRF allowlist. Every control is
+exercised by an automated suite whose evidence is captured in the repository.
+Two residual risks (plain-HTTP session transport and local-only logs) are
+accepted for the authorised laboratory and flagged for closure — TLS and
+centralised logging — before any production deployment.</p>
+
+<div class="page-break"></div>
+<h2>Appendix A — Reproducing the Environment</h2>
+<pre>git clone https://github.com/grayman-ap/assignment_542.git
+cp .env.example .env                 # edit ports/passwords as needed
+make build && make up                # builds images, starts db+app+vulnerable+preview
+make seed                            # seeds both DBs (random admin password)
+make smoke                           # HTTP smoke test of both builds
+make tests                           # runs ALL suites, writes evidence/generated/
+make evidence                        # regenerate stable evidence samples
+docker compose logs app --tail 200   # inspect the audit log
+make down                            # stop</pre>
+<p class="small">Test accounts (fictitious): student <span class="fixed">student@ftminna.edu.ng</span> /
+password is generated at seed and shown by <span class="fixed">make seed</span> output;
+admin password in <span class="fixed">db/seed-output/ADMIN_PASSWORD.txt</span>. Starter
+build demo account is documented in its login page.</p>
+
+<h2>Appendix B — References and Standards</h2>
+<ul>
+  <li>OWASP Top 10 (2021) — A03 Injection, A07 Identification &amp; Auth Failure, A05 Misconfiguration, A04 Insecure Design, A01 Broken Access Control</li>
+  <li>OWASP ASVS 4.0 — V2 Authentication, V5 Validation/Sanitisation, V4 Access Control</li>
+  <li>CWE-89 (SQLi), CWE-79 (XSS), CWE-352 (CSRF), CWE-918 (SSRF), CWE-307 (Brute force), CWE-434 (Unrestricted upload), CWE-521/916 (Weak/plaintext passwords)</li>
+  <li>STRIDE (Shostack, 2014); NIST SP 800-61 incident handling phases</li>
+</ul>
+
+</body>
+</html>

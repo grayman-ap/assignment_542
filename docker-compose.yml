@@ -1,0 +1,130 @@
+name: ift542-student-registration
+
+services:
+  db:
+    image: mysql:8.4
+    container_name: ift542-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-CHANGE_ME_root}
+      MYSQL_DATABASE: student_reg
+      MYSQL_USER: ${MYSQL_USER:-app}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-CHANGE_ME_app}
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./db:/db:ro
+      - ./docker-init:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "${DB_PORT:-13306}:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${MYSQL_ROOT_PASSWORD:-CHANGE_ME_root}"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    networks:
+      - appnet
+
+  app:
+    build: .
+    container_name: ift542-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      APP_ENV: ${APP_ENV:-production}
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_NAME: student_reg
+      DB_USER: ${MYSQL_USER:-app}
+      DB_PASSWORD: ${MYSQL_PASSWORD:-CHANGE_ME_app}
+      AUTH_MAX_ATTEMPTS: ${AUTH_MAX_ATTEMPTS:-5}
+      AUTH_LOCKOUT_MINUTES: ${AUTH_LOCKOUT_MINUTES:-15}
+      AUTH_RATE_LIMIT_MAX: ${AUTH_RATE_LIMIT_MAX:-20}
+      SESSION_SECURE: ${SESSION_SECURE:-0}
+    volumes:
+      - ./app/public:/var/www/html/app/public:ro
+      - ./app/src:/var/www/html/app/src:ro
+      - ./app/views:/var/www/html/app/views:ro
+      - ./vulnerable:/var/www/html/vulnerable:ro
+      - app_logs:/var/www/html/app/logs
+      - app_storage:/var/www/html/app/storage
+    ports:
+      - "${APP_PORT:-8080}:80"
+    networks:
+      appnet:
+        aliases:
+          - catalog.ftminna.internal
+          - preview
+
+  # Safe destination used by the URL-preview/import feature. It is the ONLY
+  # host the hardened app is allowed to fetch from (allowlist).
+  preview:
+    image: nginx:1.27-alpine
+    container_name: ift542-preview
+    restart: unless-stopped
+    volumes:
+      - ./docker/preview-html:/usr/share/nginx/html:ro
+    networks:
+      appnet:
+        aliases:
+          - catalog.ftminna.internal
+
+  # Deliberately insecure starter application used ONLY to demonstrate the
+  # "before" state in the isolated lab. It is never exposed to the internet.
+  vulnerable:
+    build: .
+    image: ift542-app
+    container_name: ift542-vuln
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_NAME: student_reg_vuln
+      DB_USER: ${MYSQL_USER:-app}
+      DB_PASSWORD: ${MYSQL_PASSWORD:-CHANGE_ME_app}
+    volumes:
+      - ./vulnerable:/var/www/html:ro
+      - ./docker/apache-vuln-vhost.conf:/etc/apache2/sites-available/000-default.conf:ro
+    ports:
+      - "${VULN_PORT:-8086}:80"
+    networks:
+      - appnet
+
+  # CLI helper: run migrations/seeds, test-user setup and DB assertions.
+  # Reuses the app image so the pdo_mysql driver is available.
+  cli:
+    build: .
+    image: ift542-app
+    container_name: ift542-cli
+    restart: "no"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_NAME: student_reg
+      DB_USER: ${MYSQL_USER:-app}
+      DB_PASSWORD: ${MYSQL_PASSWORD:-CHANGE_ME_app}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+    volumes:
+      - ./app:/var/www/html/app:ro
+      - ./tests:/var/www/html/tests:ro
+      - ./db:/var/www/html/db
+    working_dir: /var/www/html
+    entrypoint: ["/usr/local/bin/php", "/var/www/html/tests/helpers/cli.php"]
+    networks:
+      - appnet
+
+volumes:
+  db_data:
+  app_logs:
+  app_storage:
+
+networks:
+  appnet:
+    driver: bridge

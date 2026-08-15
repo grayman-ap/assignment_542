@@ -1,0 +1,10 @@
+{
+  "_comment": "Personalisation values for cloning this IFT542 project. Copy to clone.json, fill in your details, then run `make clone` (or python3 tools/clone_project.py --config clone.json). All values become placeholders replaced across the README, report and evidence. Fictitious data only.",
+  "matric_no": "2024/1-12345",
+  "full_name": "Student Name",
+  "email": "student.name@ftminna.edu.ng",
+  "department": "Information Technology",
+  "github_url": "https://github.com/studentname/ift542-student-registration",
+  "date": "2026-08-13",
+  "output_dir": "./out"
+}
