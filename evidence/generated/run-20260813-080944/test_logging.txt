@@ -1,0 +1,16 @@
+=== TEST LOGGING ===
+  [31mFAIL[0m failed login is logged (missing: "event":"login_failed")
+  [32mPASS[0m denied authorisation is logged
+  [31mFAIL[0m rejected CSRF is logged (missing: "event":"validation_rejected")
+  [31mFAIL[0m rejected validation is logged (missing: "field":"email")
+  [31mFAIL[0m blocked SSRF destination is logged (missing: "event":"url_preview")
+  [32mPASS[0m no plaintext password in logs
+  [32mPASS[0m log entries are structured and timestamped
+  (redacted sample written to /home/grayman/repository/assignment/tests/../evidence/generated/logs-sample.log)
+
+------------------------------------------------------------
+SUITE: logging  ->  PASS=3 FAIL=4
+  - failed login is logged: expected to contain ["event":"login_failed"]
+  - rejected CSRF is logged: expected to contain ["event":"validation_rejected"]
+  - rejected validation is logged: expected to contain ["field":"email"]
+  - blocked SSRF destination is logged: expected to contain ["event":"url_preview"]

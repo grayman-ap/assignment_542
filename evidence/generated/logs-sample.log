@@ -1,0 +1,9 @@
+# Redacted sample - who/what/when only; IPs partially masked; no secrets.
+{"ts":"2026-08-13T08:37:55+00:00","level":"warning","event":"auth_denied","actor":null,"ip":"172.31.x.x","ua":"IFT542-Preview/1.0","method":"GET","uri":"/","reason":"not_authenticated"}
+{"ts":"2026-08-13T08:37:55+00:00","level":"info","event":"url_preview","actor":5,"ip":"172.31.x.x","ua":"curl/8.5.0","method":"POST","uri":"/import_preview.php","outcome":"allowed","url_host":"catalog.ftminna.internal"}
+{"ts":"2026-08-13T08:37:56+00:00","level":"warning","event":"login_failed","actor":null,"ip":"172.31.x.x","ua":"curl/8.5.0","method":"POST","uri":"/login.php","email":"tstudent1@ftminna.local","outcome":"rejected","attempts":"retry"}
+{"ts":"2026-08-13T08:37:56+00:00","level":"warning","event":"auth_denied","actor":null,"ip":"172.31.x.x","ua":"curl/8.5.0","method":"GET","uri":"/profile.php","reason":"not_authenticated"}
+{"ts":"2026-08-13T08:37:56+00:00","level":"info","event":"login_success","actor":null,"ip":"172.31.x.x","ua":"curl/8.5.0","method":"POST","uri":"/login.php","email":"tstudent1@ftminna.local","outcome":"success"}
+{"ts":"2026-08-13T08:37:56+00:00","level":"warning","event":"validation_rejected","actor":5,"ip":"172.31.x.x","ua":"curl/8.5.0","method":"POST","uri":"/profile.php","reason":"missing_or_invalid","field":"csrf_token"}
+{"ts":"2026-08-13T08:37:56+00:00","level":"warning","event":"validation_rejected","actor":5,"ip":"172.31.x.x","ua":"curl/8.5.0","method":"POST","uri":"/profile.php","reason":"invalid_format","field":"email"}
+{"ts":"2026-08-13T08:37:56+00:00","level":"warning","event":"url_preview","actor":5,"ip":"172.31.x.x","ua":"curl/8.5.0","method":"POST","uri":"/import_preview.php","outcome":"blocked","url_host":"169.254.169.254"}

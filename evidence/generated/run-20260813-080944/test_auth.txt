@@ -1,0 +1,25 @@
+=== TEST AUTH ===
+  [31mFAIL[0m valid login returns a redirect to the dashboard (expected HTTP 302, got 429)
+  [31mFAIL[0m invalid credentials are rejected (401) (expected HTTP 401, got 429)
+  [31mFAIL[0m unknown account also rejected with 401 (expected HTTP 401, got 429)
+  [31mFAIL[0m session ID not rotated after login
+  [31mFAIL[0m locked account was not rejected (HTTP 429)
+  [32mPASS[0m password stored as Argon2id hash, not plaintext ( Container ift542-app Running 
+ Container ift542-vuln Running 
+ Container ift542-preview Running 
+ Container ift542-db Running 
+ Container ift542-db Waiting 
+ Container ift542-db Healthy 
+ Container ift542-student-registration-cli-run-8d5742f7df6a Creating 
+ Container ift542-student-registration-cli-run-8d5742f7df6a Created 
+OK argon2id hash verified for tstudent1@ftminna.local (no plaintext stored))
+  [31mFAIL[0m SQLi payload does not bypass login (401) (expected HTTP 401, got 422)
+  [31mFAIL[0m starter app IS vulnerable (payload bypasses login) (expected HTTP 302, got 200)
+
+------------------------------------------------------------
+SUITE: auth  ->  PASS=1 FAIL=7
+  - valid login returns a redirect to the dashboard: expected 302 got 429
+  - invalid credentials are rejected (401): expected 401 got 429
+  - unknown account also rejected with 401: expected 401 got 429
+  - SQLi payload does not bypass login (401): expected 401 got 422
+  - starter app IS vulnerable (payload bypasses login): expected 302 got 200

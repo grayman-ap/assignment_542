@@ -1,0 +1,40 @@
+=== TEST WEB DEFENCES ===
+  [32mPASS[0m CSP present (default-src 'self')
+  [32mPASS[0m X-Content-Type-Options: nosniff
+  [32mPASS[0m X-Frame-Options: DENY
+  [32mPASS[0m Referrer-Policy present
+  [32mPASS[0m Cache-Control: no-store
+  [31mFAIL[0m login for web-defence tests (expected HTTP 302, got 429)
+  [32mPASS[0m stored XSS is not rendered as executable HTML
+  [31mFAIL[0m stored XSS is output-encoded (missing: &lt;script&gt;alert(1)&lt;/script&gt;)
+  [31mFAIL[0m profile POST without CSRF token is rejected (missing: Security token is missing or invalid)
+  [32mPASS[0m profile was NOT updated without a valid CSRF token
+  [31mFAIL[0m profile POST with valid CSRF token succeeds (expected HTTP 200, got 302)
+  [31mFAIL[0m SSRF NOT blocked [http://127.0.0.1/] (HTTP 302)
+  [31mFAIL[0m SSRF NOT blocked [http://169.254.169.254/latest/meta-data/] (HTTP 302)
+  [31mFAIL[0m SSRF NOT blocked [http://192.168.1.10/] (HTTP 302)
+  [31mFAIL[0m SSRF NOT blocked [http://10.0.0.1/] (HTTP 302)
+  [31mFAIL[0m SSRF NOT blocked [http://172.16.0.1/] (HTTP 302)
+  [31mFAIL[0m SSRF NOT blocked [file:///etc/passwd] (HTTP 302)
+  [31mFAIL[0m SSRF NOT blocked [http://evil.example.org/] (HTTP 302)
+  [31mFAIL[0m allowlisted destination is reachable (expected HTTP 200, got 302)
+  [31mFAIL[0m malicious .php upload rejected with message (missing: not allowed)
+  [32mPASS[0m malicious .php upload is NOT accepted
+ Container ift542-db Running 
+ Container ift542-app Running 
+ Container ift542-vuln Running 
+ Container ift542-preview Running 
+ Container ift542-db Waiting 
+ Container ift542-db Healthy 
+ Container ift542-student-registration-cli-run-d8d6d6e406b6 Creating 
+ Container ift542-student-registration-cli-run-d8d6d6e406b6 Created 
+  [32mPASS[0m no admin account uses a default password (HTTP 0)
+
+------------------------------------------------------------
+SUITE: web-defences  ->  PASS=9 FAIL=13
+  - login for web-defence tests: expected 302 got 429
+  - stored XSS is output-encoded: expected to contain [&lt;script&gt;alert(1)&lt;/script&gt;]
+  - profile POST without CSRF token is rejected: expected to contain [Security token is missing or invalid]
+  - profile POST with valid CSRF token succeeds: expected 200 got 302
+  - allowlisted destination is reachable: expected 200 got 302
+  - malicious .php upload rejected with message: expected to contain [not allowed]

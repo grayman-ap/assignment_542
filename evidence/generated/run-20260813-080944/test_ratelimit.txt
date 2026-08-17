@@ -1,0 +1,6 @@
+=== TEST RATE LIMITING ===
+  [32mPASS[0m rate limiting engaged after burst (attempt #1 returned 429)
+  [32mPASS[0m throttled source cannot authenticate during the window
+
+------------------------------------------------------------
+SUITE: rate-limit  ->  PASS=2 FAIL=0

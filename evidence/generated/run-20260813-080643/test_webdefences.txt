@@ -1,0 +1,34 @@
+=== TEST WEB DEFENCES ===
+  [32mPASS[0m CSP present (default-src 'self')
+  [32mPASS[0m X-Content-Type-Options: nosniff
+  [32mPASS[0m X-Frame-Options: DENY
+  [32mPASS[0m Referrer-Policy present
+  [32mPASS[0m Cache-Control: no-store
+  [32mPASS[0m login for web-defence tests (HTTP 302)
+  [32mPASS[0m stored XSS is not rendered as executable HTML
+  [32mPASS[0m stored XSS is output-encoded
+  [31mFAIL[0m profile POST without CSRF token is rejected (expected HTTP 422, got 200)
+  [32mPASS[0m profile POST with valid CSRF token succeeds (HTTP 200)
+  [32mPASS[0m SSRF blocked [http://127.0.0.1/]
+  [32mPASS[0m SSRF blocked [http://169.254.169.254/latest/meta-data/]
+  [32mPASS[0m SSRF blocked [http://192.168.1.10/]
+  [32mPASS[0m SSRF blocked [http://10.0.0.1/]
+  [32mPASS[0m SSRF blocked [http://172.16.0.1/]
+  [32mPASS[0m SSRF blocked [file:///etc/passwd]
+  [32mPASS[0m SSRF blocked [http://evil.example.org/]
+  [32mPASS[0m allowlisted destination is reachable (HTTP 200)
+  [32mPASS[0m malicious .php upload rejected with message
+  [32mPASS[0m malicious .php upload is NOT accepted
+ Container ift542-preview Running 
+ Container ift542-db Running 
+ Container ift542-app Running 
+ Container ift542-vuln Running 
+ Container ift542-db Waiting 
+ Container ift542-db Healthy 
+ Container ift542-student-registration-cli-run-9542ca31abe3 Creating 
+ Container ift542-student-registration-cli-run-9542ca31abe3 Created 
+  [32mPASS[0m no admin account uses a default password (HTTP 0)
+
+------------------------------------------------------------
+SUITE: web-defences  ->  PASS=20 FAIL=1
+  - profile POST without CSRF token is rejected: expected 422 got 200

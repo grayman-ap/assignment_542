@@ -1,0 +1,12 @@
+=== TEST LOGGING ===
+  [32mPASS[0m failed login is logged
+  [32mPASS[0m denied authorisation is logged
+  [32mPASS[0m rejected CSRF is logged
+  [32mPASS[0m rejected validation is logged
+  [32mPASS[0m blocked SSRF destination is logged
+  [32mPASS[0m no plaintext password in logs
+  [32mPASS[0m log entries are structured and timestamped
+  (redacted sample written to /home/grayman/repository/assignment/tests/../evidence/generated/logs-sample.log)
+
+------------------------------------------------------------
+SUITE: logging  ->  PASS=7 FAIL=0

@@ -1,0 +1,32 @@
+=== TEST SQL INJECTION ===
+ Container ift542-db Running 
+ Container ift542-app Running 
+ Container ift542-vuln Running 
+ Container ift542-preview Running 
+ Container ift542-db Waiting 
+ Container ift542-db Healthy 
+ Container ift542-student-registration-cli-run-0300afa44cd7 Creating 
+ Container ift542-student-registration-cli-run-0300afa44cd7 Created 
+ Container ift542-db Running 
+ Container ift542-app Running 
+ Container ift542-vuln Running 
+ Container ift542-preview Running 
+ Container ift542-db Waiting 
+ Container ift542-db Healthy 
+ Container ift542-student-registration-cli-run-0345ba72d77b Creating 
+ Container ift542-student-registration-cli-run-0345ba72d77b Created 
+  [32mPASS[0m user table untouched after injection attempts (7 rows before and after)
+ Container ift542-db Running 
+ Container ift542-app Running 
+ Container ift542-vuln Running 
+ Container ift542-preview Running 
+ Container ift542-db Waiting 
+ Container ift542-db Healthy 
+ Container ift542-student-registration-cli-run-c2a0f9805d1e Creating 
+ Container ift542-student-registration-cli-run-c2a0f9805d1e Created 
+  [32mPASS[0m courses table intact (6 rows)
+  [32mPASS[0m hardened login rejected payload [admin@ftminna.edu.ng' -- ] (HTTP 422)
+  [32mPASS[0m hardened login rejected payload [x' OR '1'='1] (HTTP 422)
+
+------------------------------------------------------------
+SUITE: sqli  ->  PASS=4 FAIL=0
